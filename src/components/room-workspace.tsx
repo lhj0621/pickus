@@ -99,6 +99,10 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
 
   const pins = useMemo(() => roomState?.pins ?? [], [roomState]);
   const selectedPin = useMemo(() => pins.find((pin) => pin.id === selectedPinId) ?? pins[0] ?? null, [pins, selectedPinId]);
+  const selectedPinRank = useMemo(
+    () => (selectedPin ? pins.findIndex((pin) => pin.id === selectedPin.id) + 1 : null),
+    [pins, selectedPin],
+  );
 
   const loadRoom = useCallback(async () => {
     try {
@@ -337,16 +341,19 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f4f7f6] text-[#17201c]">
-      <header className="border-b border-[#d8e0dc] bg-white">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f8faf6_0%,#eef4ef_100%)] text-[#17201c]">
+      <header className="border-b border-[#d8e0dc] bg-[#fffefa]/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase text-[#2f6b57]">Pickus</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-normal text-[#111714]">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--pickus-green)]">Pickus</p>
+            <h1 className="mt-1 break-words text-2xl font-semibold tracking-normal text-[#111714]">
               {roomState?.room.name ?? "공유 지도"}
             </h1>
+            <p className="mt-2 text-sm text-[#687266]">
+              핀 {pins.length}개 · 5초마다 자동 갱신
+            </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
             <label className="sr-only" htmlFor="author-name">
               이름
             </label>
@@ -358,21 +365,24 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
                 setAuthorName(event.target.value);
                 saveAuthorName(event.target.value);
               }}
-              className="h-10 rounded-lg border border-[#cbd7d1] bg-[#f9fbfa] px-3 text-sm outline-none focus:border-[#2f6b57] focus:ring-2 focus:ring-[#cfe7dd]"
+              className="h-10 min-w-0 rounded-lg border border-[#cbd7d1] bg-[#f9fbfa] px-3 text-sm outline-none transition focus:border-[#2f6b57] focus:ring-2 focus:ring-[#cfe7dd] sm:w-36"
               placeholder="내 이름"
             />
             <button
               type="button"
               onClick={copyInviteLink}
-              className="flex h-10 items-center justify-center gap-2 rounded-lg border border-[#cbd7d1] bg-white px-3 text-sm font-medium hover:bg-[#edf4f1]"
+              className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-[#cbd7d1] bg-white px-3 text-sm font-medium text-[#24342c] transition hover:bg-[#edf4f1] focus:outline-none focus:ring-2 focus:ring-[#cfe7dd] focus:ring-offset-2"
             >
               <Copy size={16} aria-hidden="true" />
               {copied ? "복사됨" : "초대 링크"}
             </button>
+            <span className="sr-only" role="status" aria-live="polite">
+              {copied ? "초대 링크가 복사되었습니다." : ""}
+            </span>
             <button
               type="button"
               onClick={() => void loadRoom()}
-              className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1f5d49] px-3 text-sm font-semibold text-white hover:bg-[#184a3a]"
+              className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--pickus-green-dark)] px-3 text-sm font-semibold text-white transition hover:bg-[#0f3025] focus:outline-none focus:ring-2 focus:ring-[#cfe7dd] focus:ring-offset-2"
             >
               <RefreshCw size={16} aria-hidden="true" />
               새로고침
@@ -382,8 +392,8 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
       </header>
 
       <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_390px]">
-        <section className="min-h-[560px] overflow-hidden rounded-lg border border-[#d8e0dc] bg-white">
-          <div className="border-b border-[#e1e7e4] p-3">
+        <section className="min-h-[560px] overflow-hidden rounded-lg border border-[#d8e0dc] bg-[#fffefa] shadow-[0_16px_60px_rgba(31,57,45,0.08)]">
+          <div className="border-b border-[#e1e7e4] bg-white/80 p-3">
             <form className="flex gap-2" onSubmit={handleSearch}>
               <label className="sr-only" htmlFor="place-search">
                 상점 검색
@@ -392,13 +402,14 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
                 id="place-search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                className="h-11 min-w-0 flex-1 rounded-lg border border-[#cbd7d1] px-3 text-sm outline-none focus:border-[#2f6b57] focus:ring-2 focus:ring-[#cfe7dd]"
+                className="h-11 min-w-0 flex-1 rounded-lg border border-[#cbd7d1] bg-[#fbfcfb] px-3 text-sm outline-none transition placeholder:text-[#9aa49d] focus:border-[#2f6b57] focus:ring-2 focus:ring-[#cfe7dd]"
                 placeholder="상점명이나 동네를 검색"
               />
               <button
                 type="submit"
                 disabled={isSearching || mapStatus !== "ready"}
-                className="flex h-11 min-w-24 items-center justify-center gap-2 rounded-lg bg-[#1f5d49] px-4 text-sm font-semibold text-white hover:bg-[#184a3a] disabled:cursor-not-allowed disabled:bg-[#92aaa0]"
+                className="flex h-11 min-w-24 shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--pickus-green-dark)] px-4 text-sm font-semibold text-white transition hover:bg-[#0f3025] focus:outline-none focus:ring-2 focus:ring-[#cfe7dd] focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#92aaa0]"
+                aria-describedby={mapStatus !== "ready" ? "map-status-message" : undefined}
               >
                 {isSearching ? <Loader2 className="animate-spin" size={17} aria-hidden="true" /> : <Search size={17} aria-hidden="true" />}
                 검색
@@ -412,26 +423,31 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
                     type="button"
                     onClick={() => void addPlace(place)}
                     disabled={!clientId || pendingAction === `add-${place.kakaoPlaceId}`}
-                    className="min-h-20 rounded-lg border border-[#d8e0dc] bg-[#f9fbfa] p-3 text-left text-sm transition hover:border-[#2f6b57] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="min-h-20 rounded-lg border border-[#d8e0dc] bg-[#f9fbfa] p-3 text-left text-sm transition hover:border-[#2f6b57] hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#cfe7dd] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    <span className="flex items-start justify-between gap-2">
-                      <span className="font-semibold text-[#17201c]">{place.name}</span>
-                      <Plus size={16} aria-hidden="true" />
+                    <span className="flex min-w-0 items-start justify-between gap-2">
+                      <span className="min-w-0 break-words font-semibold text-[#17201c]">{place.name}</span>
+                      <Plus className="mt-0.5 shrink-0 text-[var(--pickus-green)]" size={16} aria-hidden="true" />
                     </span>
-                    <span className="mt-1 block text-xs leading-5 text-[#69746e]">{place.address}</span>
+                    <span className="mt-1 block break-words text-xs leading-5 text-[#69746e]">{place.address}</span>
                   </button>
                 ))}
               </div>
             ) : null}
           </div>
 
-          <div className="relative h-[520px] bg-[#dfe8e3]">
+          <div className="relative h-[440px] bg-[#dfe8e3] sm:h-[520px]">
             <div ref={mapContainerRef} className="h-full w-full" />
             {mapStatus !== "ready" ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-[#edf3f0] p-6 text-center">
-                <div className="max-w-sm">
+              <div className="absolute inset-0 flex items-center justify-center bg-[#edf3f0] bg-[linear-gradient(90deg,rgba(19,59,46,0.06)_1px,transparent_1px),linear-gradient(rgba(19,59,46,0.06)_1px,transparent_1px)] bg-[size:34px_34px] p-6 text-center">
+                <div
+                  id="map-status-message"
+                  className="max-w-sm rounded-lg border border-[#d7e2dc] bg-white/90 p-5 shadow-sm"
+                  role={mapStatus === "loading" ? "status" : "alert"}
+                  aria-live={mapStatus === "loading" ? "polite" : "assertive"}
+                >
                   <MapPin className="mx-auto text-[#2f6b57]" size={34} aria-hidden="true" />
-                  <p className="mt-3 font-semibold">{getMapStatusTitle(mapStatus)}</p>
+                  <p className="mt-3 font-semibold text-[#111714]">{getMapStatusTitle(mapStatus)}</p>
                   <p className="mt-2 text-sm leading-6 text-[#66726b]">
                     {getMapStatusDescription(mapStatus)}
                   </p>
@@ -443,17 +459,20 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
 
         <aside className="space-y-4">
           {error ? (
-            <p className="rounded-lg border border-[#efc7c2] bg-[#fff3f0] px-3 py-2 text-sm text-[#9b2d23]">{error}</p>
+            <p className="rounded-lg border border-[#efc7c2] bg-[#fff3f0] px-3 py-2 text-sm text-[#9b2d23]" role="alert">{error}</p>
           ) : null}
 
-          <section className="rounded-lg border border-[#d8e0dc] bg-white">
+          <section className="rounded-lg border border-[#d8e0dc] bg-[#fffefa] shadow-sm">
             <div className="flex items-center justify-between border-b border-[#e1e7e4] px-4 py-3">
-              <h2 className="text-base font-semibold">핀 {pins.length}개</h2>
+              <div>
+                <h2 className="text-base font-semibold">맛집 후보</h2>
+                <p className="mt-1 text-xs text-[#69746e]">좋아요와 댓글을 보며 고르기</p>
+              </div>
               {isLoadingRoom ? <Loader2 className="animate-spin text-[#6d7772]" size={18} aria-hidden="true" /> : null}
             </div>
             <div className="max-h-[320px] overflow-y-auto p-3">
               {pins.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-[#cbd7d1] p-5 text-center text-sm text-[#69746e]">
+                <div className="rounded-lg border border-dashed border-[#cbd7d1] bg-[#f7faf8] p-5 text-center text-sm text-[#69746e]">
                   아직 추가된 핀이 없습니다.
                 </div>
               ) : (
@@ -466,20 +485,25 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
                         setSelectedPinId(pin.id);
                         centerPin(pin);
                       }}
-                      className={`w-full rounded-lg border p-3 text-left transition ${
+                      aria-pressed={selectedPin?.id === pin.id}
+                      className={`group w-full rounded-lg border p-3 text-left transition focus:outline-none focus:ring-2 focus:ring-[#cfe7dd] ${
                         selectedPin?.id === pin.id
-                          ? "border-[#2f6b57] bg-[#edf7f2]"
-                          : "border-[#d8e0dc] bg-[#f9fbfa] hover:border-[#8bb7a6]"
+                          ? "border-[#2f6b57] bg-[#edf7f2] shadow-[inset_3px_0_0_#2f6b57]"
+                          : "border-[#d8e0dc] bg-[#f9fbfa] hover:border-[#8bb7a6] hover:bg-white"
                       }`}
                     >
-                      <span className="flex items-start justify-between gap-2">
-                        <span className="font-semibold">{pin.name}</span>
-                        <span className="flex items-center gap-1 text-xs text-[#2f6b57]">
+                      <span className="flex min-w-0 items-start justify-between gap-2">
+                        <span className="min-w-0 break-words font-semibold">{pin.name}</span>
+                        <span className="flex shrink-0 items-center gap-1 rounded-lg border border-[#d7e5dd] bg-white px-2 py-1 text-xs text-[#2f6b57]">
                           <Heart size={14} aria-hidden="true" />
                           {pin.likeCount}
                         </span>
                       </span>
-                      <span className="mt-1 block text-xs leading-5 text-[#69746e]">{pin.address}</span>
+                      <span className="mt-2 block break-words text-xs leading-5 text-[#69746e]">{pin.address}</span>
+                      <span className="mt-2 flex items-center gap-1 text-xs text-[#7a837a]">
+                        <MessageCircle size={13} aria-hidden="true" />
+                        댓글 {pin.comments.length}개
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -487,16 +511,19 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
             </div>
           </section>
 
-          <section className="rounded-lg border border-[#d8e0dc] bg-white">
+          <section className="rounded-lg border border-[#d8e0dc] bg-[#fffefa] shadow-sm">
             <div className="border-b border-[#e1e7e4] px-4 py-3">
               <h2 className="text-base font-semibold">선택한 핀</h2>
             </div>
             {selectedPin ? (
               <div className="space-y-4 p-4">
-                <div>
-                  <p className="text-lg font-semibold">{selectedPin.name}</p>
-                  <p className="mt-1 text-sm leading-6 text-[#69746e]">{selectedPin.address}</p>
-                  {selectedPin.category ? <p className="mt-1 text-xs text-[#2f6b57]">{selectedPin.category}</p> : null}
+                <div className="border-l-2 border-[#d7e5dd] pl-3">
+                  {selectedPinRank ? (
+                    <p className="text-xs font-semibold text-[var(--pickus-coral)]">후보 {selectedPinRank}</p>
+                  ) : null}
+                  <p className="mt-1 break-words text-lg font-semibold">{selectedPin.name}</p>
+                  <p className="mt-1 break-words text-sm leading-6 text-[#69746e]">{selectedPin.address}</p>
+                  {selectedPin.category ? <p className="mt-2 break-words text-xs font-medium text-[#2f6b57]">{selectedPin.category}</p> : null}
                 </div>
 
                 <div className="flex gap-2">
@@ -504,7 +531,12 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
                     type="button"
                     onClick={() => void toggleLike(selectedPin)}
                     disabled={pendingAction === `like-${selectedPin.id}`}
-                    className="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-[#cbd7d1] bg-white text-sm font-medium hover:bg-[#edf4f1] disabled:opacity-60"
+                    className={`flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-[#cfe7dd] disabled:opacity-60 ${
+                      selectedPin.liked
+                        ? "border-[#f0c7bd] bg-[#fff3ef] text-[#9a3d2f] hover:bg-[#ffe9e1]"
+                        : "border-[#cbd7d1] bg-white text-[#26372f] hover:bg-[#edf4f1]"
+                    }`}
+                    aria-pressed={selectedPin.liked}
                   >
                     <Heart
                       className={selectedPin.liked ? "fill-[#df5d52] text-[#df5d52]" : "text-[#52615a]"}
@@ -518,7 +550,7 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
                       type="button"
                       onClick={() => void deleteSelectedPin(selectedPin)}
                       disabled={pendingAction === `delete-${selectedPin.id}`}
-                      className="flex h-10 w-11 items-center justify-center rounded-lg border border-[#efc7c2] bg-white text-[#9b2d23] hover:bg-[#fff3f0] disabled:opacity-60"
+                      className="flex h-10 w-11 shrink-0 items-center justify-center rounded-lg border border-[#efc7c2] bg-white text-[#9b2d23] transition hover:bg-[#fff3f0] focus:outline-none focus:ring-2 focus:ring-[#f0c8c4] disabled:opacity-60"
                       aria-label="핀 삭제"
                     >
                       <Trash2 size={17} aria-hidden="true" />
@@ -537,8 +569,8 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
                     ) : (
                       selectedPin.comments.map((comment) => (
                         <div key={comment.id} className="border-b border-[#edf1ef] pb-2 last:border-b-0">
-                          <p className="text-xs font-semibold text-[#2f6b57]">{comment.authorName}</p>
-                          <p className="mt-1 text-sm leading-6">{comment.content}</p>
+                          <p className="break-words text-xs font-semibold text-[#2f6b57]">{comment.authorName}</p>
+                          <p className="mt-1 break-words text-sm leading-6">{comment.content}</p>
                         </div>
                       ))
                     )}
@@ -558,13 +590,13 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
                       value={commentDrafts[selectedPin.id] ?? ""}
                       maxLength={300}
                       onChange={(event) => setCommentDrafts((drafts) => ({ ...drafts, [selectedPin.id]: event.target.value }))}
-                      className="h-10 min-w-0 flex-1 rounded-lg border border-[#cbd7d1] px-3 text-sm outline-none focus:border-[#2f6b57] focus:ring-2 focus:ring-[#cfe7dd]"
+                      className="h-10 min-w-0 flex-1 rounded-lg border border-[#cbd7d1] bg-[#fbfcfb] px-3 text-sm outline-none transition focus:border-[#2f6b57] focus:ring-2 focus:ring-[#cfe7dd]"
                       placeholder="의견 남기기"
                     />
                     <button
                       type="submit"
                       disabled={pendingAction === `comment-${selectedPin.id}`}
-                      className="flex h-10 w-11 items-center justify-center rounded-lg bg-[#1f5d49] text-white hover:bg-[#184a3a] disabled:bg-[#92aaa0]"
+                      className="flex h-10 w-11 shrink-0 items-center justify-center rounded-lg bg-[var(--pickus-green-dark)] text-white transition hover:bg-[#0f3025] focus:outline-none focus:ring-2 focus:ring-[#cfe7dd] disabled:bg-[#92aaa0]"
                       aria-label="댓글 추가"
                     >
                       {pendingAction === `comment-${selectedPin.id}` ? (
