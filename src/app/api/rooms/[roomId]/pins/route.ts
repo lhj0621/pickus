@@ -7,8 +7,10 @@ export async function POST(request: Request, context: { params: Promise<{ roomId
     const body = await readJson(request);
     const payload = body && typeof body === "object" ? body : {};
     const clientId = "clientId" in payload ? payload.clientId : undefined;
+    const authorName = "authorName" in payload ? payload.authorName : undefined;
+    const editKey = "editKey" in payload ? payload.editKey : undefined;
     const place = "place" in payload && payload.place && typeof payload.place === "object" ? payload.place : {};
-    const pin = await addPin(roomId, clientId, place);
+    const pin = await addPin(roomId, clientId, place, editKey, authorName);
 
     return Response.json({ pin }, { status: 201 });
   } catch (error) {

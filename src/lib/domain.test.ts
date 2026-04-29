@@ -2,10 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import {
   canDeletePin,
+  canMutateRoom,
+  calculateOnlineParticipants,
   normalizeClientId,
   normalizeAuthorName,
   normalizeComment,
+  normalizePinNote,
+  normalizePinStatus,
   normalizePlace,
+  normalizePriceLevel,
   normalizeRoomName,
   toggleLike,
 } from "./domain";
@@ -91,6 +96,53 @@ describe("normalizeComment", () => {
 
   it("빈 댓글은 거부한다", () => {
     expect(() => normalizeComment("   ")).toThrow("댓글을 입력해 주세요.");
+  });
+});
+
+describe("normalizePinStatus", () => {
+  it("지원하는 후보 상태만 허용한다", () => {
+    expect(normalizePinStatus("confirmed")).toBe("confirmed");
+    expect(normalizePinStatus("hold")).toBe("hold");
+  });
+
+  it("알 수 없는 상태는 기본값으로 바꾼다", () => {
+    expect(normalizePinStatus("done")).toBe("want");
+  });
+});
+
+describe("normalizePinNote", () => {
+  it("한줄 메모를 80자로 제한한다", () => {
+    expect(normalizePinNote("가".repeat(100))).toHaveLength(80);
+  });
+});
+
+describe("normalizePriceLevel", () => {
+  it("가격대를 정리한다", () => {
+    expect(normalizePriceLevel("expensive")).toBe("expensive");
+    expect(normalizePriceLevel("unknown")).toBeNull();
+  });
+});
+
+describe("room access", () => {
+  it("읽기 전용 접근은 mutation을 막는다", () => {
+    expect(canMutateRoom("read")).toBe(false);
+    expect(canMutateRoom("edit")).toBe(true);
+  });
+});
+
+describe("calculateOnlineParticipants", () => {
+  it("최근 45초 안에 본 참여자만 온라인으로 본다", () => {
+    const now = new Date("2026-04-29T09:00:00.000Z");
+
+    expect(
+      calculateOnlineParticipants(
+        [
+          { clientId: "a", authorName: "민수", color: "#123456", lastSeenAt: "2026-04-29T08:59:20.000Z" },
+          { clientId: "b", authorName: "지우", color: "#654321", lastSeenAt: "2026-04-29T08:59:00.000Z" },
+        ],
+        now,
+      ),
+    ).toEqual([{ clientId: "a", authorName: "민수", color: "#123456", lastSeenAt: "2026-04-29T08:59:20.000Z" }]);
   });
 });
 

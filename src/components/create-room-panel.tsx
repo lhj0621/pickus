@@ -27,7 +27,8 @@ export function CreateRoomPanel() {
         throw new Error(data.error || "지도 방을 만들 수 없습니다.");
       }
 
-      router.push(`/rooms/${data.room.id}`);
+      const editKey = typeof data.room.editKey === "string" ? `?editKey=${encodeURIComponent(data.room.editKey)}` : "";
+      router.push(`/rooms/${data.room.id}${editKey}`);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "지도 방을 만들 수 없습니다.");
     } finally {

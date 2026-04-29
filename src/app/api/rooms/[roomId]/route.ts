@@ -6,8 +6,11 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request, context: { params: Promise<{ roomId: string }> }) {
   try {
     const { roomId } = await context.params;
-    const clientId = new URL(request.url).searchParams.get("clientId");
-    const roomState = await getRoomState(roomId, clientId);
+    const searchParams = new URL(request.url).searchParams;
+    const clientId = searchParams.get("clientId");
+    const editKey = searchParams.get("editKey");
+    const readKey = searchParams.get("readKey");
+    const roomState = await getRoomState(roomId, clientId, editKey, readKey);
 
     return Response.json(roomState);
   } catch (error) {

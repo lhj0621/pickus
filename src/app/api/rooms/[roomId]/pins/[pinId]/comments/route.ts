@@ -9,7 +9,8 @@ export async function POST(request: Request, context: { params: Promise<{ roomId
     const clientId = "clientId" in payload ? payload.clientId : undefined;
     const authorName = "authorName" in payload ? payload.authorName : undefined;
     const content = "content" in payload ? payload.content : undefined;
-    const comment = await addComment(roomId, pinId, clientId, authorName, content);
+    const editKey = "editKey" in payload ? payload.editKey : undefined;
+    const comment = await addComment(roomId, pinId, clientId, authorName, content, editKey);
 
     return Response.json({ comment }, { status: 201 });
   } catch (error) {

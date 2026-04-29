@@ -1,4 +1,5 @@
 import { badRequest } from "./errors";
+import type { Participant, PinStatus, PriceLevel, RoomAccessMode } from "./types";
 
 export type PlaceInput = {
   kakaoPlaceId?: unknown;
@@ -16,6 +17,18 @@ export type NormalizedPlace = {
   lat: number;
   lng: number;
   category: string | null;
+};
+
+export type PinUpdateInput = {
+  status?: unknown;
+  note?: unknown;
+  priceLevel?: unknown;
+};
+
+export type NormalizedPinUpdate = {
+  status: PinStatus;
+  note: string;
+  priceLevel: PriceLevel | null;
 };
 
 export function normalizeRoomName(value: unknown): string {
@@ -66,6 +79,43 @@ export function normalizeComment(value: unknown): string {
   }
 
   return comment;
+}
+
+export function normalizePinStatus(value: unknown): PinStatus {
+  if (value === "hold" || value === "rejected" || value === "confirmed") {
+    return value;
+  }
+
+  return "want";
+}
+
+export function normalizePinNote(value: unknown): string {
+  return normalizeText(value, 80);
+}
+
+export function normalizePriceLevel(value: unknown): PriceLevel | null {
+  if (value === "cheap" || value === "moderate" || value === "expensive") {
+    return value;
+  }
+
+  return null;
+}
+
+export function normalizePinUpdate(input: PinUpdateInput): NormalizedPinUpdate {
+  return {
+    status: normalizePinStatus(input.status),
+    note: normalizePinNote(input.note),
+    priceLevel: normalizePriceLevel(input.priceLevel),
+  };
+}
+
+export function canMutateRoom(accessMode: RoomAccessMode): boolean {
+  return accessMode === "edit";
+}
+
+export function calculateOnlineParticipants(participants: Participant[], now = new Date()): Participant[] {
+  const thresholdMs = now.getTime() - 45_000;
+  return participants.filter((participant) => new Date(participant.lastSeenAt).getTime() >= thresholdMs);
 }
 
 export function canDeletePin(ownerClientId: string, requesterClientId: string): boolean {
