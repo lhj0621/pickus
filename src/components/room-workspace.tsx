@@ -350,7 +350,7 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
               {roomState?.room.name ?? "공유 지도"}
             </h1>
             <p className="mt-2 text-sm text-[#687266]">
-              핀 {pins.length}개 · 5초마다 자동 갱신
+              후보 {pins.length}개 · 5초마다 자동 갱신
             </p>
           </div>
           <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
@@ -465,7 +465,7 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
           <section className="rounded-lg border border-[#d8e0dc] bg-[#fffefa] shadow-sm">
             <div className="flex items-center justify-between border-b border-[#e1e7e4] px-4 py-3">
               <div>
-                <h2 className="text-base font-semibold">맛집 후보</h2>
+                <h2 className="text-base font-semibold">후보 투표판</h2>
                 <p className="mt-1 text-xs text-[#69746e]">좋아요와 댓글을 보며 고르기</p>
               </div>
               {isLoadingRoom ? <Loader2 className="animate-spin text-[#6d7772]" size={18} aria-hidden="true" /> : null}
