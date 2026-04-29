@@ -164,7 +164,7 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
     }
 
     if (window.kakao?.maps) {
-      initializeMap(window.kakao.maps);
+      window.kakao.maps.load(() => initializeMap(window.kakao!.maps));
       return;
     }
 
@@ -176,7 +176,7 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
     script.async = true;
     script.addEventListener("load", () => {
       if (window.kakao?.maps) {
-        initializeMap(window.kakao.maps);
+        window.kakao.maps.load(() => initializeMap(window.kakao!.maps));
       }
     });
     script.addEventListener("error", () => setMapStatus("error"));
@@ -431,11 +431,9 @@ export function RoomWorkspace({ roomId }: { roomId: string }) {
               <div className="absolute inset-0 flex items-center justify-center bg-[#edf3f0] p-6 text-center">
                 <div className="max-w-sm">
                   <MapPin className="mx-auto text-[#2f6b57]" size={34} aria-hidden="true" />
-                  <p className="mt-3 font-semibold">
-                    {mapStatus === "missing-key" ? "Kakao Maps API 키가 필요합니다." : "지도를 준비하고 있습니다."}
-                  </p>
+                  <p className="mt-3 font-semibold">{getMapStatusTitle(mapStatus)}</p>
                   <p className="mt-2 text-sm leading-6 text-[#66726b]">
-                    Vercel 환경 변수에 NEXT_PUBLIC_KAKAO_MAP_APP_KEY를 추가하면 지도가 표시됩니다.
+                    {getMapStatusDescription(mapStatus)}
                   </p>
                 </div>
               </div>
@@ -625,4 +623,28 @@ function escapeHtml(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function getMapStatusTitle(mapStatus: "loading" | "ready" | "missing-key" | "error"): string {
+  if (mapStatus === "missing-key") {
+    return "Kakao Maps API 키가 필요합니다.";
+  }
+
+  if (mapStatus === "error") {
+    return "지도를 불러오지 못했습니다.";
+  }
+
+  return "지도를 준비하고 있습니다.";
+}
+
+function getMapStatusDescription(mapStatus: "loading" | "ready" | "missing-key" | "error"): string {
+  if (mapStatus === "missing-key") {
+    return "Vercel 환경 변수에 NEXT_PUBLIC_KAKAO_MAP_APP_KEY를 추가하면 지도가 표시됩니다.";
+  }
+
+  if (mapStatus === "error") {
+    return "Kakao Developers의 Web 플랫폼 도메인에 https://pickus.vercel.app 등록 여부를 확인해 주세요.";
+  }
+
+  return "잠시만 기다려 주세요.";
 }
